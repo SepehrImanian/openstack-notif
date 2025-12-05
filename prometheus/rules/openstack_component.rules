@@ -1,0 +1,56 @@
+groups:
+  - name: openstack-health-check
+    rules:
+      - alert: HeatDown
+        expr: openstack_heat_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Heat Service Unreachable – {{ $labels.instance }}"
+          description: "Heat API on {{ $labels.instance }} has been unresponsive for the last 2 minutes."
+          
+      - alert: PlacementDown
+        expr: openstack_placement_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Placement API Unavailable – {{ $labels.instance }}"
+          description: "Placement API has been unreachable for more than 2 minutes on {{ $labels.instance }}."
+
+      - alert: IdentityDown
+        expr: openstack_identity_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Keystone Service Unreachable – {{ $labels.instance }}"
+          description: "Keystone Identity service is unreachable on {{ $labels.instance }} for more than 2 minutes."
+
+      - alert: NeutronDown
+        expr: openstack_neutron_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Neutron Service Unreachable – {{ $labels.instance }}"
+          description: "Neutron API is not responding on {{ $labels.instance }} for the past 2 minutes."
+
+      - alert: NovaDown
+        expr: openstack_nova_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Nova Service Unreachable – {{ $labels.instance }}"
+          description: "Nova API on {{ $labels.instance }} has been unreachable for more than 2 minutes."
+
+      - alert: GlanceDown
+        expr: openstack_glance_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Glance Service Unreachable – {{ $labels.instance }}"
+          description: "Glance API on {{ $labels.instance }} has not responded for over 2 minutes."

@@ -1,0 +1,172 @@
+groups:
+  - name: libvirt-alerts
+    rules:
+      - alert: HighCPUStealTime
+        expr: rate(libvirt_domain_vcpu_steal_seconds_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU Steal Time – Hypervisor Overloaded ({{ $labels.instance }})"
+          description: "VM {{ $labels.instance_name }} is losing CPU cycles due to hypervisor CPU contention."
+
+      - alert: HypervisorOverloaded
+        expr: count(libvirt_domain_info_state == 1) by (instance) > 80
+        labels:
+          severity: warning
+        annotations:
+          summary: "Hypervisor Possibly Overloaded – {{ $labels.instance }}"
+          description: "Host {{ $labels.instance }} is running more than 80 active VMs. Consider balancing workloads."
+          
+      - alert: LibvirtDown
+        expr: libvirt_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Libvirt Service Down – {{ $labels.instance }}"
+          description: "Alert Manager:\n The libvirt service on {{ $labels.instance }} has been unreachable or crashed for more than 2 minutes."
+
+      - alert: HighCPUWaitTime
+        expr: |
+          (
+            rate(libvirt_domain_vcpu_wait_seconds_total[5m])
+          /
+            rate(libvirt_domain_info_cpu_time_seconds_total[5m])
+          )
+          * on (domain) group_left(instance_name) libvirt_domain_openstack_info > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Wait Time on VM {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} on host {{ $labels.instance }} is experiencing elevated CPU wait time for more than 5 minutes."
+
+      - alert: NetworkReceiveErrors
+        expr: |
+           rate(libvirt_domain_interface_stats_receive_errors_total[5m])
+           /
+           rate(libvirt_domain_interface_stats_receive_packets_total[5m])
+           * on (domain) group_left(project_name, instance_name) libvirt_domain_openstack_info > 0.001
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network RX Errors on VM {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} on host {{ $labels.instance }} (project: {{ $labels.project_name }}) is experiencing receive-side network errors for at least 10 minutes."
+
+      - alert: NetworkTransmitErrors
+        expr: |
+          rate(libvirt_domain_interface_stats_transmit_errors_total[5m])
+          /
+          rate(libvirt_domain_interface_stats_transmit_packets_total[5m])
+          * on (domain) group_left(project_name, instance_name) libvirt_domain_openstack_info > 0.001
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Network TX Errors on VM {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} on host {{ $labels.instance }} (project: {{ $labels.project_name }}) has been reporting transmit-side network errors for at least 10 minutes."
+
+      - alert: HighDiskReadActivity
+        expr: |
+          rate(libvirt_domain_block_stats_read_bytes_total[5m]) / 1024 / 1024
+          * on (domain) group_left(instance_name) libvirt_domain_openstack_info > 190
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Disk Read Activity on VM {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} on host {{ $labels.instance }} is reading more than 190 MB/s for 10 minutes."
+
+      - alert: HighDiskWriteActivity
+        expr: |
+          rate(libvirt_domain_block_stats_write_bytes_total[5m]) / 1024 / 1024
+          * on (domain) group_left(project_name, instance_name) libvirt_domain_openstack_info > 190
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Disk Write Activity on VM {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} on host {{ $labels.instance }} (project: {{ $labels.project_name }}) is writing more than 190 MB/s for 10 minutes."
+
+      - alert: MultipleVMsStateChange
+        expr: |
+           count((sum by (domain) (libvirt_domain_info_state) != sum by (domain) (libvirt_domain_info_state offset 5m))) > 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Multiple VM State Changes Detected"
+          description: "Alert Manager:\n Multiple VMs have changed state within the last 5 minutes. Investigate host or OpenStack operations."
+
+      - alert: HighPacketLostRXVM
+        expr: |
+          ( rate(libvirt_domain_interface_stats_receive_drops_total[5m]) /
+            (rate(libvirt_domain_interface_stats_receive_packets_total[5m])
+            + rate(libvirt_domain_interface_stats_receive_drops_total[5m])) )
+          * on (domain) group_left(instance_name) libvirt_domain_openstack_info > 0.02
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High RX Packet Loss – VM {{ $labels.instance_name }}"
+          description: "Download packet loss exceeded 2% on VM {{ $labels.instance_name }} for more than 10 minutes."
+
+      - alert: HighPacketLostTXVM
+        expr: |
+          ( rate(libvirt_domain_interface_stats_transmit_drops_total[5m]) /
+            (rate(libvirt_domain_interface_stats_transmit_packets_total[5m])
+            + rate(libvirt_domain_interface_stats_transmit_drops_total[5m])) )
+          * on (domain) group_left(instance_name) libvirt_domain_openstack_info > 0.02
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High TX Packet Loss – VM {{ $labels.instance_name }}"
+          description: "Upload packet loss exceeded 2% on VM {{ $labels.instance_name }}. Validate NIC, network paths, and hypervisor load."
+
+      - alert: VMHighCPUUsage
+        expr: rate(libvirt_domain_info_cpu_time_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Usage on VM {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} is consuming more than 80% CPU for over 5 minutes."
+
+      - alert: VMMemoryPressure
+        expr: libvirt_domain_info_max_mem_bytes - libvirt_domain_info_memory_usage_bytes < (512 * 1024 * 1024)
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory Utilization on VM {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} is close to exhausting available RAM."
+
+      - alert: VMPaused
+        expr: libvirt_domain_info_state == 3
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "VM Paused – {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} entered a paused state (possible I/O or memory issue)."
+
+      - alert: VMShutdownStuck
+        expr: libvirt_domain_info_state == 4
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "VM Shutdown Stuck – {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} has been shutting down for more than 10 minutes."
+
+      - alert: VMDiskIOLatencyHigh
+        expr: libvirt_domain_block_stats_read_time_seconds_total > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Disk I/O Latency – {{ $labels.instance_name }}"
+          description: "VM {{ $labels.instance_name }} has high disk latency for at least 5 minutes."

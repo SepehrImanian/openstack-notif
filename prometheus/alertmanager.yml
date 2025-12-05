@@ -1,0 +1,23 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: slack_notifications
+  group_by: ["alertname", "instance"]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 2h
+
+receivers:
+  - name: slack_notifications
+    slack_configs:
+      - send_resolved: true
+        api_url: "SLACK_WEBHOOK_URL>"
+        channel: "#arvan"
+        username: "Alertmanager"
+        title: "{{ .CommonLabels.alertname }} - Severity: {{ .CommonLabels.severity }}"
+        text: |
+          *Alert:* {{ .CommonAnnotations.summary }}
+          *Details:* {{ .CommonAnnotations.description }}
+          *Instance:* {{ .CommonLabels.instance }}
+          *Status:* {{ .Status }}

@@ -1,0 +1,80 @@
+groups:
+  - name: mysql-alerts
+    rules:
+      - alert: MySQLDown
+        expr: mysql_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL Service Unreachable – {{ $labels.instance }}"
+          description: "Alert Manager:\n The MySQL service on {{ $labels.instance }} has been unreachable for more than 1 minute."
+
+      - alert: HighMySQLThreadsRunning
+        expr: |
+          mysql_global_status_threads_running
+          / ignoring(variable) mysql_global_variables_max_connections > 0.50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Active Thread Count – {{ $labels.instance }}"
+          description: "Alert Manager:\n MySQL on {{ $labels.instance }} is using more than 50% of allowed connections for the last 5 minutes."
+
+      - alert: MySQLReplicationLag
+        expr: mysql_slave_status_seconds_behind_master > 30
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL Replication Lag – {{ $labels.instance }}"
+          description: "Replication lag exceeds 30 seconds on {{ $labels.instance }}. Check slave performance or network latency."
+
+      - alert: MySQLHighSlowQueries
+        expr: rate(mysql_global_status_slow_queries[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Increased Slow Queries – {{ $labels.instance }}"
+          description: "More than 5 slow queries per minute detected on {{ $labels.instance }}."
+
+      - alert: MySQLHighConnectionUsage
+        expr: mysql_global_status_threads_connected
+          / ignoring(variable) mysql_global_variables_max_connections > 0.80
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High MySQL Connection Utilization – {{ $labels.instance }}"
+          description: "Over 80% of total MySQL connections are in use on {{ $labels.instance }}."
+
+      - alert: MySQLBufferPoolPressure
+        expr: mysql_innodb_buffer_pool_pages_free
+          / mysql_innodb_buffer_pool_pages_total < 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "InnoDB Buffer Pool Under Pressure – {{ $labels.instance }}"
+          description: "Less than 5% free buffer pool pages remain on {{ $labels.instance }}."
+
+      - alert: MySQLInnoDBDiskIOLatency
+        expr: rate(mysql_innodb_data_fsyncs_total[5m]) > 200
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High InnoDB Disk Sync Activity – {{ $labels.instance }}"
+          description: "High fsync rate detected on {{ $labels.instance }} which may indicate disk latency."
+
+      - alert: MySQLAbortedConnections
+        expr: rate(mysql_global_status_aborted_connects[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL Aborted Connections – {{ $labels.instance }}"
+          description: "More than 5 aborted client connections per minute detected on {{ $labels.instance }}."
+
+

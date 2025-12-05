@@ -1,0 +1,92 @@
+groups:
+  - name: rabbitmq_alerts
+    rules:
+      - alert: RabbitMQDown
+        expr: up{job="rabbitmq"} == 0
+        for: 60s
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ Instance Unavailable"
+          description: "Alert Manager:\n The RabbitMQ node at {{ $labels.instance }} has been unreachable for more than 1 minute."
+
+      - alert: RabbitMQHighOpenFD
+        expr: rabbitmq_process_open_fds / rabbitmq_process_max_fds > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High FD Utilization in RabbitMQ"
+          description: "Alert Manager:\n File descriptor usage exceeded 90% for over 5 minutes on {{ $labels.instance }}."
+
+      - alert: RabbitMQ_MemoryAlarm_Critical
+        expr: rabbitmq_alarms_memory_used_watermark == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ Memory Alarm Triggered"
+          description: "Alert Manager:\n A memory alarm has been active on {{ $labels.instance }} for more than 1 minute."
+
+      - alert: RabbitMQQueueBacklogCritical
+        expr: rabbitmq_queue_messages_ready > 50000
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ Queue Backlog Critical"
+          description: "Alert Manager:\n Queue {{ $labels.queue }} contains more than 50,000 unprocessed messages for 5 minutes."
+
+      - alert: RabbitMQNoConsumers
+        expr: rabbitmq_queue_consumers == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ Queue Has No Consumers"
+          description: "Alert Manager:\n Queue {{ $labels.queue }} has zero active consumers on {{ $labels.instance }}."
+
+      - alert: RabbitMQZeroPublishRate
+        expr: rate(rabbitmq_queue_messages_published[5m]) == 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ Publish Rate Dropped"
+          description: "Alert Manager:\n No messages were published to queue {{ $labels.queue }} in the last 10 minutes."
+
+      - alert: RabbitMQDiskAlarmCritical
+        expr: rabbitmq_alarms_disk_free_watermark == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ Disk Free Limit Alarm"
+          description: "Alert Manager:\n Disk low-space alarm active on {{ $labels.instance }}."
+
+      - alert: RabbitMQConnectionSpike
+        expr: rabbitmq_connections > 1000
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ Connection Spike"
+          description: "Alert Manager:\n Connection count exceeded 1000 on {{ $labels.instance }}."
+
+      - alert: RabbitMQChannelSpike
+        expr: rabbitmq_channels > 5000
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ Channel Spike"
+          description: "Alert Manager:\n Channel count exceeded 5000 on {{ $labels.instance }}."
+
+      - alert: RabbitMQNodeRestarted
+        expr: (time() - rabbitmq_node_uptime_seconds) < 300
+        for: 0m
+        labels:
+          severity: info
+        annotations:
+          summary: "RabbitMQ Node Restarted"
+          description: "Alert Manager:\n Node {{ $labels.instance }} restarted within the last 5 minutes."
