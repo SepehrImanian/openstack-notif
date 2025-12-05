@@ -31,8 +31,8 @@ glance_backend_file: "yes"
 glance_backend_s3: "yes"
 glance_backend_s3_url: "https://s3.ir-thr-at1.arvanstorage.ir"
 glance_backend_s3_bucket: "glanceimages"
-glance_backend_s3_access_key: "b85b52b1-8f78-4b1d-a290-c9397cf22673"
-glance_backend_s3_secret_key: "902572fc1eff4fc68b5dcd9fc1f047664659308b6e6bf37a5db8313ec9f95c58"
+glance_backend_s3_access_key: "secret"
+glance_backend_s3_secret_key: "key"
 
 # Monitoring
 enable_prometheus: "no"
