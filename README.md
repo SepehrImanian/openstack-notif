@@ -1,6 +1,6 @@
 # openstack-notif
 
-Opinionated toolkit for provisioning an OpenStack environment and wiring it to a lightweight VM monitoring service that pushes notifications when interesting events happen (for example, when VMs are created, deleted, or change status).
+Opinionated toolkit for provisioning an OpenStack environment and wiring it to a lightweight VM monitoring service that pushes notifications when interesting events happen.
 
 The repository brings together:
 
