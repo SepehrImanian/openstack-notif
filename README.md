@@ -31,5 +31,5 @@ The repository brings together:
 1. **Provisioning** the underlying infrastructure for an OpenStack deployment using Terraform.
 2. **Deploying** OpenStack services via Kolla-Ansible with opinionated values.
 3. **Monitoring** virtual machine lifecycle events using a small Go service.
-4. **Notifying** external systems (chat, email, webhooks, etc.) about those events.
+4. **Notifying** external systems by slack
 
