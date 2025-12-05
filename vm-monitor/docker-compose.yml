@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  vm-monitor:
+    container_name: vm-monitor
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      OS_URL: ""
+      OS_PROJECT_ID: ""
+      OS_TOKEN: ""
+      SLACK_WEBHOOK: ""
+
+    restart: unless-stopped

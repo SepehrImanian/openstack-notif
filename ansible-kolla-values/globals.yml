@@ -1,0 +1,40 @@
+workaround_ansible_issue_8743: "yes"
+kolla_base_distro: "ubuntu"
+openstack_release: "2025.2"
+
+# Management / API
+network_interface: "eth0"
+api_interface: "{{ network_interface }}"
+kolla_internal_vip_address: "5.75.194.100"
+neutron_plugin_agent: "openvswitch"
+
+# garp black on aravan and hetzner, so vrrp not work
+enable_haproxy: "no"
+enable_keepalived: "no"
+
+# storage
+enable_cinder: "no"
+enable_cinder_backend_lvm: "no"
+
+# Nova
+nova_compute_virt_type: qemu
+
+#database
+enable_proxysql: "no"
+
+# Neutron
+neutron_external_interface: "dummy0"
+enable_neutron_provider_networks: "yes"
+
+# Glance
+glance_backend_file: "yes"
+glance_backend_s3: "yes"
+glance_backend_s3_url: "https://s3.ir-thr-at1.arvanstorage.ir"
+glance_backend_s3_bucket: "glanceimages"
+glance_backend_s3_access_key: "b85b52b1-8f78-4b1d-a290-c9397cf22673"
+glance_backend_s3_secret_key: "902572fc1eff4fc68b5dcd9fc1f047664659308b6e6bf37a5db8313ec9f95c58"
+
+# Monitoring
+enable_prometheus: "no"
+prometheus_external_labels:
+  cluster: "arvan-task"
